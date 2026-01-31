@@ -18,8 +18,12 @@ const EXERCISE_TYPES = [
 
 export default function GymView({ onClose }) {
   const dispatch = useDispatch()
-  const { collectedSprites, dailyStats } = useSelector(state => state.gameState)
+  const gameState = useSelector(state => state.gameState || {})
   const { playSuccess, playCollect, playError } = useSound()
+
+  // Safely destructure with defaults
+  const collectedSprites = gameState.collectedSprites || []
+  const dailyStats = gameState.dailyStats || { workoutsLogged: 0 }
 
   const [exerciseName, setExerciseName] = useState('')
   const [duration, setDuration] = useState('')

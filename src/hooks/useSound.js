@@ -69,6 +69,72 @@ export default function useSound() {
     setTimeout(() => playTone(1320, 0.15, 0.1), 120)
   }, [playTone])
 
+  // Level up fanfare
+  const playLevelUp = useCallback(() => {
+    const notes = [392, 440, 494, 523, 587, 659, 698, 784] // G4 to G5
+    notes.forEach((freq, i) => {
+      setTimeout(() => playTone(freq, 0.12, 0.15), i * 80)
+    })
+  }, [playTone])
+
+  // Achievement unlock sound
+  const playAchievement = useCallback(() => {
+    const notes = [523, 659, 784, 659, 784, 1047] // Special pattern
+    notes.forEach((freq, i) => {
+      setTimeout(() => playTone(freq, 0.15, 0.12), i * 100)
+    })
+  }, [playTone])
+
+  // Dialogue blip
+  const playDialogueBlip = useCallback(() => {
+    playTone(600 + Math.random() * 100, 0.03, 0.05)
+  }, [playTone])
+
+  // Cutscene dramatic sound
+  const playCutsceneEffect = useCallback((type = 'fade') => {
+    switch (type) {
+      case 'fade':
+        playTone(100, 0.5, 0.1, 'sine')
+        break
+      case 'dramatic':
+        playTone(150, 0.3, 0.15)
+        setTimeout(() => playTone(100, 0.5, 0.15), 200)
+        break
+      case 'boss':
+        for (let i = 0; i < 5; i++) {
+          setTimeout(() => playTone(80 + i * 20, 0.15, 0.12), i * 100)
+        }
+        break
+      default:
+        break
+    }
+  }, [playTone])
+
+  // Quest complete sound
+  const playQuestComplete = useCallback(() => {
+    const notes = [392, 494, 587, 784, 987, 784, 987, 1175]
+    notes.forEach((freq, i) => {
+      setTimeout(() => playTone(freq, 0.2, 0.1), i * 120)
+    })
+  }, [playTone])
+
+  // Chapter complete fanfare
+  const playChapterComplete = useCallback(() => {
+    const melody = [
+      { freq: 523, dur: 0.2 },
+      { freq: 659, dur: 0.2 },
+      { freq: 784, dur: 0.2 },
+      { freq: 1047, dur: 0.4 },
+      { freq: 784, dur: 0.2 },
+      { freq: 1047, dur: 0.6 },
+    ]
+    let time = 0
+    melody.forEach(({ freq, dur }) => {
+      setTimeout(() => playTone(freq, dur, 0.12), time)
+      time += dur * 800
+    })
+  }, [playTone])
+
   return {
     playStep,
     playMenuOpen,
@@ -76,5 +142,11 @@ export default function useSound() {
     playError,
     playCollect,
     playTone,
+    playLevelUp,
+    playAchievement,
+    playDialogueBlip,
+    playCutsceneEffect,
+    playQuestComplete,
+    playChapterComplete,
   }
 }

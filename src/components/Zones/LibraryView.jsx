@@ -1,20 +1,26 @@
 import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { addXp, updateStat, addSprite, showToast } from '../../features/gameStateSlice'
+import { addXp, updateStat, addSprite, showToast, logReading, updateStreak } from '../../features/gameStateSlice'
 import { getRandomSprite } from '../../data/sprites'
-import { Book, Play, Square, Clock } from 'lucide-react'
+import { Book, Play, Square, Clock, BookOpen } from 'lucide-react'
 import useSound from '../../hooks/useSound'
 
 const FOCUS_DURATION = 25 * 60 // 25 minutes in seconds
 
 export default function LibraryView({ onClose }) {
   const dispatch = useDispatch()
-  const { collectedSprites } = useSelector(state => state.gameState)
+  const gameState = useSelector(state => state.gameState || {})
   const { playSuccess, playCollect, playError } = useSound()
+
+  // Safely destructure with defaults
+  const collectedSprites = gameState.collectedSprites || []
+  const dailyStats = gameState.dailyStats || { focusMinutes: 0, pagesRead: 0 }
 
   const [timeLeft, setTimeLeft] = useState(FOCUS_DURATION)
   const [isActive, setIsActive] = useState(false)
   const [sessionComplete, setSessionComplete] = useState(false)
+  const [showReadingLog, setShowReadingLog] = useState(false)
+  const [pagesInput, setPagesInput] = useState('')
   const intervalRef = useRef(null)
 
   useEffect(() => {
@@ -84,6 +90,26 @@ export default function LibraryView({ onClose }) {
 
   const progress = ((FOCUS_DURATION - timeLeft) / FOCUS_DURATION) * 100
 
+  const handleLogReading = (e) => {
+    e.preventDefault()
+    const pages = parseInt(pagesInput) || 0
+    if (pages <= 0) {
+      dispatch(showToast('Please enter a valid number of pages!'))
+      playError()
+      return
+    }
+
+    // 5 XP per 10 pages
+    const xpEarned = Math.floor(pages / 10) * 5
+    dispatch(logReading(pages))
+    dispatch(addXp(xpEarned > 0 ? xpEarned : 5)) // Minimum 5 XP
+    dispatch(updateStreak({ habit: 'reading', increment: true }))
+    dispatch(showToast(`Logged ${pages} pages! +${xpEarned > 0 ? xpEarned : 5} XP`))
+    playSuccess()
+    setPagesInput('')
+    setShowReadingLog(false)
+  }
+
   return (
     <div className="text-center">
       <div className="flex items-center justify-center gap-2 mb-4">
@@ -91,9 +117,68 @@ export default function LibraryView({ onClose }) {
         <h2 className="text-sm font-bold text-gba-light">University Library</h2>
       </div>
 
-      <p className="text-[10px] text-gba-light/70 mb-6">
+      <p className="text-[10px] text-gba-light/70 mb-4">
         Focus on your studies to unlock Knowledge Sprites!
       </p>
+
+      {/* Tab buttons */}
+      <div className="flex gap-2 mb-4 justify-center">
+        <button
+          onClick={() => setShowReadingLog(false)}
+          className={`px-3 py-1 text-[10px] rounded transition-colors ${
+            !showReadingLog
+              ? 'bg-blue-600 text-white'
+              : 'bg-gba-wall/30 text-gba-light/70 hover:bg-gba-wall/50'
+          }`}
+        >
+          Focus Timer
+        </button>
+        <button
+          onClick={() => setShowReadingLog(true)}
+          className={`px-3 py-1 text-[10px] rounded transition-colors ${
+            showReadingLog
+              ? 'bg-blue-600 text-white'
+              : 'bg-gba-wall/30 text-gba-light/70 hover:bg-gba-wall/50'
+          }`}
+        >
+          Log Reading
+        </button>
+      </div>
+
+      {/* Reading Log Form */}
+      {showReadingLog ? (
+        <div className="mb-6">
+          <div className="text-4xl mb-4">📖</div>
+          <p className="text-[10px] text-gba-light/70 mb-4">
+            Today's pages read: <span className="text-blue-400 font-bold">{dailyStats.pagesRead}</span>
+          </p>
+          <form onSubmit={handleLogReading} className="space-y-3">
+            <div>
+              <label className="block text-[10px] text-gba-light/70 mb-2 text-left">
+                Pages read today
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="500"
+                value={pagesInput}
+                onChange={(e) => setPagesInput(e.target.value)}
+                placeholder="10"
+                className="w-full px-3 py-2 bg-gba-wall/30 border border-gba-path rounded-lg text-xs text-gba-light focus:outline-none focus:border-blue-400 placeholder:text-gba-light/30"
+              />
+            </div>
+            <button
+              type="submit"
+              className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors text-xs"
+            >
+              <BookOpen size={14} />
+              Log Pages (+5 XP per 10 pages)
+            </button>
+          </form>
+        </div>
+      ) : (
+        <>
+          {/* Original Focus Timer content */}
 
       {/* Timer Display */}
       <div className="relative mb-6">
@@ -175,6 +260,8 @@ export default function LibraryView({ onClose }) {
           </button>
         )}
       </div>
+        </>
+      )}
     </div>
   )
 }

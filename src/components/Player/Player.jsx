@@ -1,41 +1,37 @@
 import { useSelector } from 'react-redux'
 import { TILE_SIZE } from '../../data/maps'
+import CharacterSprite from '../Sprites/CharacterSprite'
 
-const directionEmoji = {
-  up: '⬆️',
-  down: '⬇️',
-  left: '⬅️',
-  right: '➡️',
-}
+export default function Player({ offset = { x: 0, y: 0 } }) {
+  const player = useSelector(state => state.player || {})
 
-export default function Player() {
-  const { position, direction, isMoving } = useSelector(state => state.player)
+  // Safely destructure with defaults
+  const position = player.position || { x: 0, y: 0 }
+  const direction = player.direction || 'down'
+  const isMoving = player.isMoving || false
+
+  // Use visualPosition for smooth movement if available, otherwise fall back to position
+  // Handle case where visualPosition might be undefined from old saved state
+  const renderPosition = player.visualPosition && player.visualPosition.x !== undefined
+    ? player.visualPosition
+    : position
 
   return (
     <div
-      className="absolute z-20 flex items-center justify-center transition-all duration-150 ease-linear"
+      className="absolute z-20 flex items-center justify-center transition-all duration-150 ease-out"
       style={{
         width: TILE_SIZE,
         height: TILE_SIZE,
-        left: position.x * TILE_SIZE,
-        top: position.y * TILE_SIZE,
-        fontSize: '24px',
-        transform: isMoving ? 'scale(1.1)' : 'scale(1)',
+        left: (renderPosition.x - offset.x) * TILE_SIZE,
+        top: (renderPosition.y - offset.y) * TILE_SIZE,
       }}
     >
-      <div className="relative">
-        {/* Player character */}
-        <span className="select-none" role="img" aria-label="player">
-          🧑‍🎓
-        </span>
-        {/* Direction indicator (subtle) */}
-        <span
-          className="absolute -bottom-1 -right-1 text-xs opacity-50"
-          style={{ fontSize: '10px' }}
-        >
-          {directionEmoji[direction]}
-        </span>
-      </div>
+      <CharacterSprite
+        characterId="player"
+        direction={direction}
+        isMoving={isMoving}
+        scale={1}
+      />
     </div>
   )
 }

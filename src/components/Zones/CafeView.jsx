@@ -3,7 +3,12 @@ import { Coffee, Sparkles } from 'lucide-react'
 import { sprites } from '../../data/sprites'
 
 export default function CafeView({ onClose }) {
-  const { collectedSprites, dailyStats, level } = useSelector(state => state.gameState)
+  const gameState = useSelector(state => state.gameState || {})
+
+  // Safely destructure with defaults
+  const collectedSprites = gameState.collectedSprites || []
+  const dailyStats = gameState.dailyStats || { focusMinutes: 0, workoutsLogged: 0 }
+  const level = gameState.level || 1
 
   const collectedSpriteData = sprites.filter(s => collectedSprites.includes(s.id))
   const uncollectedCount = sprites.length - collectedSprites.length

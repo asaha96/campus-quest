@@ -4,7 +4,8 @@ import { hideToast } from '../../features/gameStateSlice'
 
 export default function Toast() {
   const dispatch = useDispatch()
-  const { toastMessage } = useSelector(state => state.gameState)
+  const gameState = useSelector(state => state.gameState || {})
+  const toastMessage = gameState.toastMessage || null
 
   useEffect(() => {
     if (toastMessage) {

@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 
 export default function useDayNight() {
   const [timeOfDay, setTimeOfDay] = useState('day')
-  const [filterStyle, setFilterStyle] = useState({})
+  const [filterStyle, setFilterStyle] = useState({}) // Force no filter
 
   useEffect(() => {
     const updateTime = () => {
@@ -40,7 +40,7 @@ export default function useDayNight() {
         // Night (21:00 - 06:00)
         period = 'night'
         filter = {
-          filter: 'brightness(0.5) saturate(0.6) hue-rotate(30deg)',
+          filter: 'brightness(0.8) saturate(0.8) hue-rotate(15deg)',
         }
       }
 
@@ -49,9 +49,8 @@ export default function useDayNight() {
     }
 
     updateTime()
-    const interval = setInterval(updateTime, 60000) // Update every minute
-
-    return () => clearInterval(interval)
+    // const interval = setInterval(updateTime, 60000) // Update every minute
+    // return () => clearInterval(interval)
   }, [])
 
   return { timeOfDay, filterStyle }
