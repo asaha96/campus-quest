@@ -37,6 +37,10 @@ export default function ZoneTransition() {
         clearTimeout(fadeInTimer)
         clearTimeout(completeTimer)
       }
+    } else {
+      // When transition ends, ensure we reset to idle
+      // This handles when isTransitioning is set to false before animation completes
+      setPhase('idle')
     }
   }, [isTransitioning, targetZoneName])
 
